@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Office.Server.Utilities;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
 
@@ -10,6 +11,8 @@ namespace SharePoint.FolderIds
 {
     public class FolderIdWorkItemJobDefinition : SPWorkItemJobDefinition
     {
+        private WorkItemTimerJobState _timerJobState;
+
         public override string DisplayName
         {
             get
@@ -63,11 +66,33 @@ namespace SharePoint.FolderIds
         {
             return FolderIdWorkItemType;
         }
+        public override void Execute(SPJobState jobState)
+        {
+            this._timerJobState = new WorkItemTimerJobState(true);
+            try
+            {
+                base.Execute(jobState);
+            }
+            finally
+            {
+                this._timerJobState.Dispose();
+                this._timerJobState = null;
+            }
+            
+        }
+
 
         protected override bool ProcessWorkItem(SPContentDatabase contentDatabase, SPWorkItemCollection workItems, SPWorkItem workItem,
             SPJobState jobState)
         {
-            return true;
+
+            FolderCrawler folderCrawler = new FolderCrawler(this.DisplayName, jobState);
+            folderCrawler.CancellationGranularity = IterationGranularity.Item;
+            folderCrawler.ResumeGranularity = IterationGranularity.List;
+            folderCrawler.DisableEventFiring = true;
+            return folderCrawler.ProcessWorkItem(workItems, workItem, this._timerJobState,
+                folderCrawler.ProcessSingleWorkItem);
+
         }
 
         internal static void Register(SPWebApplication webApp)
@@ -84,8 +109,9 @@ namespace SharePoint.FolderIds
 
         internal static void UnRegister(SPWebApplication webApp)
         {
-           FolderIdWorkItemJobDefinition def =    webApp.JobDefinitions.GetValue<FolderIdWorkItemJobDefinition>(FolderIdWorkItemJobName);
-            def.Delete();
+            FolderIdWorkItemJobDefinition def =
+                webApp.JobDefinitions.GetValue<FolderIdWorkItemJobDefinition>(FolderIdWorkItemJobName);
+            if(def != null) def.Delete();
         }
     }
 }

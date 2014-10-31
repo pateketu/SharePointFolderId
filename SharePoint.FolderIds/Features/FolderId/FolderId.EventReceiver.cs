@@ -21,6 +21,7 @@ namespace SharePoint.FolderIds.Features.FolderId
         {
             SPSite site = (SPSite) properties.Feature.Parent;
             FolderIdWorkItemJobDefinition.Register(site.WebApplication);
+            site.AddWorkItem(Guid.Empty, DateTime.Now.ToUniversalTime(), FolderIdWorkItemJobDefinition.FolderIdWorkItemType, site.RootWeb.ID, site.ID, 1, false, Guid.Empty, Guid.Empty, site.RootWeb.CurrentUser.ID, null, null, Guid.Empty);
 
         }
 

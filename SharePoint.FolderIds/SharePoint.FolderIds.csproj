@@ -43,10 +43,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.DocumentManagement, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Server, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.SharePoint" />
@@ -56,19 +58,33 @@
     <Compile Include="Features\FolderId\FolderId.EventReceiver.cs">
       <DependentUpon>FolderId.feature</DependentUpon>
     </Compile>
+    <Compile Include="FolderCrawler.cs" />
     <Compile Include="FolderIdGeneration\FolderIdGeneration.cs" />
     <Compile Include="FolderIdService.cs" />
     <Compile Include="FolderIdWorkItemJobDefinition.cs" />
+    <Compile Include="Layouts\SharePoint.FolderIds\FolderIds.aspx.cs">
+      <DependentUpon>FolderIds.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Layouts\SharePoint.FolderIds\FolderIds.aspx.designer.cs">
+      <DependentUpon>FolderIds.aspx.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Features\FolderId\FolderId.feature">
       <FeatureId>{8bb7ea86-f201-40c1-92c4-a905d4fbf4e3}</FeatureId>
     </None>
+    <None Include="FolderIdAction\SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{8745bb3a-c830-44bc-8210-62e38abfb26e}</SharePointProjectItemId>
+    </None>
     <None Include="FolderIdGeneration\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{c8713ade-8e02-43d0-a737-63c8ba76a0fc}</SharePointProjectItemId>
     </None>
     <None Include="key.snk" />
+    <None Include="Layouts\SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{5a2c37d7-4529-494d-8ffb-4a7c5f3b7177}</SharePointProjectItemId>
+    </None>
     <None Include="Package\Package.package">
       <PackageId>{7bb330d0-5d13-40a2-a03a-2a5a5361086f}</PackageId>
     </None>
@@ -81,7 +97,9 @@
     <Content Include="Features\FolderId\FolderId.Template.xml">
       <DependentUpon>FolderId.feature</DependentUpon>
     </Content>
+    <Content Include="FolderIdAction\Elements.xml" />
     <Content Include="FolderIdGeneration\Elements.xml" />
+    <Content Include="Layouts\SharePoint.FolderIds\FolderIds.aspx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
