@@ -11,10 +11,11 @@ namespace SharePoint.FolderIds
 {
     public class FolderCrawler:TimerJobUtility
     {
-        private bool shouldCancel;
+        private bool _shouldCancel;
         public FolderCrawler(string name, SPJobState state) : base(name,state)
         {
-            shouldCancel = false;
+            _shouldCancel = false;
+            //this.StrictQuerySemantics = false;
         }
 
         
@@ -36,35 +37,49 @@ namespace SharePoint.FolderIds
 
         private void OnListCrawl(SPList list)
         {
-            if (list.BaseType == SPBaseType.DocumentLibrary)
+            if (list.BaseTemplate == SPListTemplateType.DocumentLibrary) //only looking into Document Libs
             {
+                EnsureContentTypeIndexed(list); //ContentTypeId must be indexed
+                
                 SPQuery query = new SPQuery
                 {
-                    ViewAttributes = "Scope=\"Recursive\"",
+                    ViewAttributes = "Scope=\"RecursiveAll\"",
                     Query = ItemsOfContentTypeOrChildQuery(SPBuiltInContentTypeId.Folder.ToString())
                 };
                 try
                 {
-                    this.ProcessListItems(list, query, OnItemCrawl, OnItemError);
+                    
+                    this.ProcessListItems(list,query,OnItemsCrawl, OnItemsError);
                 }
                 catch (Exception exception)
                 {
-                    shouldCancel = true;
+                    _shouldCancel = true;
                 }
                 
             }
         }
 
-        private bool OnItemError(SPListItem item, Exception e)
+        private bool OnItemsError(SPListItemCollection items, Exception e)
         {
             //Log
             return false;
         }
 
-        private void OnItemCrawl(SPListItem item)
+
+     
+        private void OnItemsCrawl(SPListItemCollection items)
         {
-            //Just Force Assign Folder Ids
-            FolderIdService.AssignId(item.Web,item);
+
+            int index = 0;
+            while (index < items.Count)
+            {
+                FolderIdService.AssignId(items.List.ParentWeb, items[index]);
+              
+                if (this.ShouldCancel(IterationGranularity.Item))
+                    break;
+                checked { ++index; }
+            }
+           
         }
 
         public void ProcessSingleWorkItem(SPWorkItem wi, WorkItemTimerJobState timerjobstate)
@@ -74,7 +89,7 @@ namespace SharePoint.FolderIds
 
         protected override bool ShouldCancelCore(IterationGranularity granularity)
         {
-            return base.ShouldCancelCore(granularity) || shouldCancel;
+            return base.ShouldCancelCore(granularity) || _shouldCancel;
             
         }
     }
